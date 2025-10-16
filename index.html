@@ -74,13 +74,58 @@
             padding-bottom: 56.25%; /* 16:9 */
         }
         
-        /* Video.js se inyectará aquí */
         #videoPlayer {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
+        }
+
+        /* 🔹 Botones de salto */
+        .skip-controls {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 20px;
+            pointer-events: none;
+        }
+
+        .skip-btn {
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            font-size: 1.4rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: auto;
+            opacity: 0;
+            transition: opacity 0.3s, transform 0.2s;
+        }
+
+        .skip-btn:hover,
+        .skip-btn:focus {
+            background: rgba(0, 0, 0, 0.9);
+            transform: scale(1.1);
+        }
+
+        .video-container:hover .skip-btn {
+            opacity: 1;
+        }
+
+        /* En móviles y TVs, hacer botones siempre visibles */
+        @media (max-width: 768px) {
+            .skip-btn {
+                opacity: 0.9 !important;
+            }
         }
         
         .video-controls-bottom {
@@ -249,7 +294,6 @@
                 <div class="video-info" id="videoDuration">Duración: --:--</div>
             </div>
             <div class="video-container">
-                <!-- Video.js se montará aquí -->
                 <video
                     id="videoPlayer"
                     class="video-js vjs-default-skin"
@@ -262,6 +306,12 @@
                         Para ver este video, habilita JavaScript o usa un navegador que lo soporte.
                     </p>
                 </video>
+
+                <!-- 🔹 Botones de salto -->
+                <div class="skip-controls">
+                    <button class="skip-btn skip-back" id="skipBack">⏪</button>
+                    <button class="skip-btn skip-forward" id="skipForward">⏩</button>
+                </div>
             </div>
             <div class="video-controls-bottom">
                 <div class="video-title" id="videoTitle">Selecciona un capítulo para reproducir</div>
@@ -287,163 +337,177 @@
         </div>
     </div>
 
-    <!-- 🔹 Video.js JS (asíncrono) -->
+    <!-- 🔹 Video.js JS -->
     <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
 
     <script>
-    function getEpisodeUrl(episodeNumber) {
-        return `https://www.opmya.es/caponline/episodios_720p/OnePiece_Jap-Sub-Esp_S050_Ep.${episodeNumber}-720p.mp4`;
-    }
-
-    const START_EPISODE = 1089;
-    const END_EPISODE = 1144;
-    const totalEpisodes = END_EPISODE - START_EPISODE + 1;
-    let currentEpisode = null;
-    let player = null;
-
-    // Función para actualizar el título y duración cuando el video esté listo
-    function onVideoReady(episodeNumber) {
-        const videoTitle = document.getElementById('videoTitle');
-        const durationEl = document.getElementById('videoDuration');
-
-        // Actualizar título
-        videoTitle.textContent = `Episodio ${episodeNumber}`;
-
-        // Actualizar duración si está disponible
-        const duration = player.duration();
-        if (isFinite(duration)) {
-            const mins = Math.floor(duration / 60);
-            const secs = Math.floor(duration % 60);
-            durationEl.textContent = `Duración: ${mins}:${secs.toString().padStart(2, '0')}`;
-        } else {
-            durationEl.textContent = 'Duración: --:--';
+        // ✅ Corregida: sin espacios extra
+        function getEpisodeUrl(episodeNumber) {
+            return `https://www.opmya.es/caponline/episodios_720p/OnePiece_Jap-Sub-Esp_S050_Ep.${episodeNumber}-720p.mp4`;
         }
-    }
 
-    document.addEventListener('DOMContentLoaded', () => {
-        setTimeout(() => {
-            if (typeof videojs !== 'function') {
-                document.getElementById('videoTitle').textContent = 'Error: Video.js no cargó.';
+        const START_EPISODE = 1089;
+        const END_EPISODE = 1144;
+        const totalEpisodes = END_EPISODE - START_EPISODE + 1;
+        let currentEpisode = null;
+        let player = null;
+
+        function onVideoReady(episodeNumber) {
+            const videoTitle = document.getElementById('videoTitle');
+            const durationEl = document.getElementById('videoDuration');
+
+            videoTitle.textContent = `Episodio ${episodeNumber}`;
+
+            const duration = player.duration();
+            if (isFinite(duration)) {
+                const mins = Math.floor(duration / 60);
+                const secs = Math.floor(duration % 60);
+                durationEl.textContent = `Duración: ${mins}:${secs.toString().padStart(2, '0')}`;
+            } else {
+                durationEl.textContent = 'Duración: --:--';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                if (typeof videojs !== 'function') {
+                    document.getElementById('videoTitle').textContent = 'Error: Video.js no cargó.';
+                    return;
+                }
+
+                try {
+                    player = videojs('videoPlayer', {
+                        controls: true,
+                        autoplay: false,
+                        preload: 'auto',
+                        playsinline: true
+                    });
+
+                    // ✅ Inicializar botones de salto
+                    player.ready(() => {
+                        document.getElementById('skipBack').addEventListener('click', () => {
+                            if (!player) return;
+                            const currentTime = player.currentTime();
+                            player.currentTime(Math.max(0, currentTime - 10));
+                        });
+
+                        document.getElementById('skipForward').addEventListener('click', () => {
+                            if (!player) return;
+                            const currentTime = player.currentTime();
+                            const duration = player.duration();
+                            if (isFinite(duration)) {
+                                player.currentTime(Math.min(duration, currentTime + 10));
+                            } else {
+                                player.currentTime(currentTime + 10);
+                            }
+                        });
+                    });
+
+                    generateEpisodes();
+                } catch (e) {
+                    console.error('Error al inicializar Video.js:', e);
+                    document.getElementById('videoTitle').textContent = 'No se pudo iniciar el reproductor.';
+                }
+            }, 100);
+        });
+
+        function generateEpisodes() {
+            const container = document.getElementById('episodesContainer');
+            container.innerHTML = '';
+            
+            for (let i = 0; i < totalEpisodes; i++) {
+                const episodeNumber = START_EPISODE + i;
+                const episodeCard = document.createElement('div');
+                episodeCard.className = 'episode-card';
+                episodeCard.dataset.episode = episodeNumber;
+                
+                episodeCard.innerHTML = `
+                    <div class="episode-number">Capítulo ${episodeNumber}</div>
+                    <div class="episode-title">Episodio ${episodeNumber}</div>
+                    <div class="episode-duration">
+                        <svg class="play-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="5,3 19,12 5,21"></polygon>
+                        </svg>
+                        Reproducir
+                    </div>
+                `;
+                
+                episodeCard.addEventListener('click', () => playEpisode(episodeNumber));
+                container.appendChild(episodeCard);
+            }
+        }
+
+        function playEpisode(episodeNumber) {
+            if (!player) {
+                console.warn('Reproductor no inicializado');
                 return;
             }
 
-            try {
-                player = videojs('videoPlayer', {
-                    controls: true,
-                    autoplay: false,
-                    preload: 'auto',
-                    playsinline: true
-                });
+            const videoTitle = document.getElementById('videoTitle');
+            videoTitle.textContent = `Cargando Episodio ${episodeNumber}...`;
 
-                // Iniciar la app
-                generateEpisodes();
-            } catch (e) {
-                console.error('Error al inicializar Video.js:', e);
-                document.getElementById('videoTitle').textContent = 'No se pudo iniciar el reproductor.';
+            player.off('loadedmetadata', player.__onLoadedMetadata);
+            player.off('error', player.__onError);
+
+            const onLoaded = () => {
+                onVideoReady(episodeNumber);
+            };
+            const onError = () => {
+                videoTitle.textContent = `Error: Episodio ${episodeNumber} no disponible`;
+            };
+
+            player.__onLoadedMetadata = onLoaded;
+            player.__onError = onError;
+
+            player.one('loadedmetadata', onLoaded);
+            player.one('error', onError);
+
+            player.src({
+                src: getEpisodeUrl(episodeNumber),
+                type: 'video/mp4'
+            });
+
+            player.load();
+            player.play().catch(e => {
+                console.warn("Reproducción automática fallida:", e);
+            });
+
+            currentEpisode = episodeNumber;
+            updateNavigationButtons();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function updateNavigationButtons() {
+            const prevButton = document.getElementById('prevButton');
+            const nextButton = document.getElementById('nextButton');
+            
+            if (!currentEpisode) {
+                prevButton.disabled = true;
+                nextButton.disabled = true;
+                return;
             }
-        }, 100);
-    });
-
-    function generateEpisodes() {
-        const container = document.getElementById('episodesContainer');
-        container.innerHTML = '';
-        
-        for (let i = 0; i < totalEpisodes; i++) {
-            const episodeNumber = START_EPISODE + i;
-            const episodeCard = document.createElement('div');
-            episodeCard.className = 'episode-card';
-            episodeCard.dataset.episode = episodeNumber;
             
-            episodeCard.innerHTML = `
-                <div class="episode-number">Capítulo ${episodeNumber}</div>
-                <div class="episode-title">Episodio ${episodeNumber}</div>
-                <div class="episode-duration">
-                    <svg class="play-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polygon points="5,3 19,12 5,21"></polygon>
-                    </svg>
-                    Reproducir
-                </div>
-            `;
+            const episodeIndex = currentEpisode - START_EPISODE;
             
-            episodeCard.addEventListener('click', () => playEpisode(episodeNumber));
-            container.appendChild(episodeCard);
+            if (episodeIndex > 0) {
+                prevButton.disabled = false;
+                prevButton.onclick = () => playEpisode(currentEpisode - 1);
+            } else {
+                prevButton.disabled = true;
+                prevButton.onclick = null;
+            }
+            
+            if (episodeIndex < totalEpisodes - 1) {
+                nextButton.disabled = false;
+                nextButton.onclick = () => playEpisode(currentEpisode + 1);
+            } else {
+                nextButton.disabled = true;
+                nextButton.onclick = null;
+            }
         }
-    }
-
-    function playEpisode(episodeNumber) {
-        if (!player) {
-            console.warn('Reproductor no inicializado');
-            return;
-        }
-
-        const videoTitle = document.getElementById('videoTitle');
-        videoTitle.textContent = `Cargando Episodio ${episodeNumber}...`;
-
-        // ✅ Limpiar listeners anteriores para evitar acumulación
-        player.off('loadedmetadata', player.__onLoadedMetadata);
-        player.off('error', player.__onError);
-
-        // ✅ Definir nuevo listener
-        const onLoaded = () => {
-            onVideoReady(episodeNumber);
-        };
-        const onError = () => {
-            videoTitle.textContent = `Error: Episodio ${episodeNumber} no disponible`;
-        };
-
-        // Guardar referencias para limpiar después
-        player.__onLoadedMetadata = onLoaded;
-        player.__onError = onError;
-
-        // ✅ Asignar nuevos listeners
-        player.one('loadedmetadata', onLoaded);
-        player.one('error', onError);
-
-        // ✅ Cambiar fuente
-        player.src({
-            src: getEpisodeUrl(episodeNumber),
-            type: 'video/mp4'
-        });
-
-        player.load();
-        player.play().catch(e => {
-            console.warn("Reproducción automática bloqueada o fallida:", e);
-            // El error ya lo maneja el listener 'error' de Video.js
-        });
-
-        currentEpisode = episodeNumber;
-        updateNavigationButtons();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    function updateNavigationButtons() {
-        const prevButton = document.getElementById('prevButton');
-        const nextButton = document.getElementById('nextButton');
-        
-        if (!currentEpisode) {
-            prevButton.disabled = true;
-            nextButton.disabled = true;
-            return;
-        }
-        
-        const episodeIndex = currentEpisode - START_EPISODE;
-        
-        if (episodeIndex > 0) {
-            prevButton.disabled = false;
-            prevButton.onclick = () => playEpisode(currentEpisode - 1);
-        } else {
-            prevButton.disabled = true;
-            prevButton.onclick = null;
-        }
-        
-        if (episodeIndex < totalEpisodes - 1) {
-            nextButton.disabled = false;
-            nextButton.onclick = () => playEpisode(currentEpisode + 1);
-        } else {
-            nextButton.disabled = true;
-            nextButton.onclick = null;
-        }
-    }
-</script>
+    </script>
 </body>
 </html>
+
+tabindex="0"
+
