@@ -7,8 +7,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- 🔹 Video.js CSS -->
     <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet">
-    <!-- 🔹 Material Icons -->
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -82,6 +80,52 @@
             left: 0;
             width: 100%;
             height: 100%;
+        }
+
+        /* 🔹 Botones de salto */
+        .skip-controls {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 20px;
+            pointer-events: none;
+        }
+
+        .skip-btn {
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            font-size: 1.4rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: auto;
+            opacity: 0;
+            transition: opacity 0.3s, transform 0.2s;
+        }
+
+        .skip-btn:hover,
+        .skip-btn:focus {
+            background: rgba(0, 0, 0, 0.9);
+            transform: scale(1.1);
+        }
+
+        .video-container:hover .skip-btn {
+            opacity: 1;
+        }
+
+        /* En móviles y TVs, hacer botones siempre visibles */
+        @media (max-width: 768px) {
+            .skip-btn {
+                opacity: 0.9 !important;
+            }
         }
         
         .video-controls-bottom {
@@ -217,23 +261,6 @@
             width: 16px;
             height: 16px;
         }
-
-        /* 🔹 Estilos para botones de salto en barra de Video.js */
-        .vjs-skip-back .material-icons,
-        .vjs-skip-forward .material-icons {
-            font-size: 24px;
-            line-height: 1;
-            vertical-align: middle;
-        }
-
-        .vjs-control-bar .vjs-skip-back,
-        .vjs-control-bar .vjs-skip-forward {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 40px;
-            padding: 0;
-        }
         
         /* Responsive */
         @media (max-width: 768px) {
@@ -279,6 +306,12 @@
                         Para ver este video, habilita JavaScript o usa un navegador que lo soporte.
                     </p>
                 </video>
+
+                <!-- 🔹 Botones de salto -->
+                <div class="skip-controls">
+                    <button class="skip-btn skip-back" id="skipBack">⏪</button>
+                    <button class="skip-btn skip-forward" id="skipForward">⏩</button>
+                </div>
             </div>
             <div class="video-controls-bottom">
                 <div class="video-title" id="videoTitle">Selecciona un capítulo para reproducir</div>
@@ -335,43 +368,6 @@
             }
         }
 
-        // 🔹 Plugin: Botones de salto integrados en la barra de controles
-        function createSkipButtons(player) {
-            // Botón retroceder 10s
-            const skipBackBtn = player.controlBar.addChild('button', {
-                clickHandler: () => {
-                    const ct = player.currentTime();
-                    player.currentTime(Math.max(0, ct - 10));
-                }
-            });
-            skipBackBtn.el().innerHTML = '<span class="material-icons">replay_10</span>';
-            skipBackBtn.el().className += ' vjs-skip-back vjs-control vjs-button';
-            skipBackBtn.controlText('Retroceder 10 segundos');
-
-            // Botón adelantar 10s
-            const skipForwardBtn = player.controlBar.addChild('button', {
-                clickHandler: () => {
-                    const ct = player.currentTime();
-                    const duration = player.duration();
-                    if (isFinite(duration)) {
-                        player.currentTime(Math.min(duration, ct + 10));
-                    } else {
-                        player.currentTime(ct + 10);
-                    }
-                }
-            });
-            skipForwardBtn.el().innerHTML = '<span class="material-icons">forward_10</span>';
-            skipForwardBtn.el().className += ' vjs-skip-forward vjs-control vjs-button';
-            skipForwardBtn.controlText('Adelantar 10 segundos');
-
-            // Insertar ANTES del volumen
-            const volumePanel = player.controlBar.volumePanel?.el?.() || player.controlBar.volumeButton?.el?.();
-            if (volumePanel && volumePanel.parentNode) {
-                volumePanel.parentNode.insertBefore(skipBackBtn.el(), volumePanel);
-                volumePanel.parentNode.insertBefore(skipForwardBtn.el(), volumePanel);
-            }
-        }
-
         document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => {
                 if (typeof videojs !== 'function') {
@@ -387,8 +383,24 @@
                         playsinline: true
                     });
 
+                    // ✅ Inicializar botones de salto
                     player.ready(() => {
-                        createSkipButtons(player);
+                        document.getElementById('skipBack').addEventListener('click', () => {
+                            if (!player) return;
+                            const currentTime = player.currentTime();
+                            player.currentTime(Math.max(0, currentTime - 10));
+                        });
+
+                        document.getElementById('skipForward').addEventListener('click', () => {
+                            if (!player) return;
+                            const currentTime = player.currentTime();
+                            const duration = player.duration();
+                            if (isFinite(duration)) {
+                                player.currentTime(Math.min(duration, currentTime + 10));
+                            } else {
+                                player.currentTime(currentTime + 10);
+                            }
+                        });
                     });
 
                     generateEpisodes();
@@ -496,4 +508,6 @@
     </script>
 </body>
 </html>
+
 tabindex="0"
+
