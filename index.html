@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UNA PIEZA</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- 🔹 Video.js CSS -->
+    <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.8;
+            margin-bottom: 20px;
+        }
+        
+        /* Reproductor de video */
+        .video-player {
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            position: relative;
+        }
+        
+        .video-controls-top {
+            background: rgba(0,0,0,0.8);
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .video-container {
+            position: relative;
+            width: 100%;
+            height: 0;
+            padding-bottom: 56.25%; /* 16:9 */
+        }
+        
+        /* Video.js se inyectará aquí */
+        #videoPlayer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .video-controls-bottom {
+            background: rgba(0,0,0,0.8);
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .video-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #4ecdc4;
+        }
+        
+        .navigation-buttons {
+            display: flex;
+            justify-content: center;           
+            margin-top: 10px;
+        }
+        
+        .nav-button {
+            background: rgba(255,255,255,0.1);
+            border: 2px solid transparent;
+            border-radius: 8px;
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            display: flex;
+            margin: 0 10px;
+            align-items: center;            
+            min-width: 120px;
+        }
+        
+        .nav-button:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+        }
+        
+        .nav-button:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .nav-button.prev {
+            border-color: #ff6b6b;
+            color: white;
+        }
+        
+        .nav-button.next {
+            border-color: #4ecdc4;
+            color: white;
+        }
+        
+        /* Pestañas de temporadas */
+        .seasons-tabs {
+            display: flex;            
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .season-tab {
+            background: rgba(255,255,255,0.1);
+            border: 2px solid transparent;
+            border-radius: 8px;
+            padding: 12px 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin: 5px;
+        }        
+        
+        .season-tab:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+        }
+        
+        .season-tab.active {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            border-color: #ff6b6b;
+            box-shadow: 0 4px 15px rgba(255,107,107,0.4);
+        }
+        
+        /* Lista de capítulos */
+        .episodes-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            margin-top: 20px;
+        }
+        
+        .episode-card {
+            background: rgba(255,255,255,0.08);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255,255,255,0.1);
+        }        
+       
+        .episode-card:hover {
+            background: rgba(255,255,255,0.15);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+        
+        .episode-number {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #4ecdc4;
+        }
+        
+        .episode-title {
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .episode-duration {
+            font-size: 0.9rem;
+            opacity: 0.7;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .play-icon {
+            width: 16px;
+            height: 16px;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            h1 { font-size: 2rem; }
+            .seasons-tabs { flex-direction: column; align-items: center; }
+            .season-tab { width: 100%; max-width: 300px; text-align: center; }
+            .episodes-container { grid-template-columns: 1fr; }
+            .navigation-buttons { flex-direction: column; align-items: center; }
+            .nav-button { width: 100%; max-width: 120px; }
+        }
+        
+        @media (max-width: 480px) {
+            h1 { font-size: 1.8rem; }
+            .video-player { margin: 0 -20px; border-radius: 0; }
+            .nav-button.prev { margin-bottom: 10px; margin-right: 10px; margin-left: 10px; }
+            .nav-button.next { margin-top: 10px; margin-left: 10px; margin-right: 10px; }
+            body { padding: 10px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>UNA PIEZA</h1>
+            <p class="subtitle">EggHead • Capítulos 1089 - 1144</p>
+        </header>
+        
+        <!-- Reproductor de video con Video.js -->
+        <div class="video-player">
+            <div class="video-controls-top">
+                <div class="video-info" id="videoDuration">Duración: --:--</div>
+            </div>
+            <div class="video-container">
+                <!-- Video.js se montará aquí -->
+                <video
+                    id="videoPlayer"
+                    class="video-js vjs-default-skin"
+                    controls
+                    preload="auto"
+                    playsinline
+                    data-setup="{}"
+                >
+                    <p class="vjs-no-js">
+                        Para ver este video, habilita JavaScript o usa un navegador que lo soporte.
+                    </p>
+                </video>
+            </div>
+            <div class="video-controls-bottom">
+                <div class="video-title" id="videoTitle">Selecciona un capítulo para reproducir</div>
+                <div class="navigation-buttons">
+                    <button class="nav-button prev" id="prevButton" disabled>
+                        <i class="fas fa-arrow-left"></i> Anterior
+                    </button>
+                    <button class="nav-button next" id="nextButton" disabled>
+                        Siguiente <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Pestañas -->
+        <div class="seasons-tabs" id="seasonTabs">
+            <div class="season-tab active" data-season="egghead">EggHead</div>
+        </div>
+        
+        <!-- Lista de capítulos -->
+        <div class="episodes-container" id="episodesContainer">
+            <!-- Los capítulos se generarán dinámicamente -->
+        </div>
+    </div>
+
+    <!-- 🔹 Video.js JS (asíncrono) -->
+    <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
+
+    <script>
+    function getEpisodeUrl(episodeNumber) {
+        return `https://www.opmya.es/caponline/episodios_720p/OnePiece_Jap-Sub-Esp_S050_Ep.${episodeNumber}-720p.mp4`;
+    }
+
+    const START_EPISODE = 1089;
+    const END_EPISODE = 1144;
+    const totalEpisodes = END_EPISODE - START_EPISODE + 1;
+    let currentEpisode = null;
+    let player = null;
+
+    // Función para actualizar el título y duración cuando el video esté listo
+    function onVideoReady(episodeNumber) {
+        const videoTitle = document.getElementById('videoTitle');
+        const durationEl = document.getElementById('videoDuration');
+
+        // Actualizar título
+        videoTitle.textContent = `Episodio ${episodeNumber}`;
+
+        // Actualizar duración si está disponible
+        const duration = player.duration();
+        if (isFinite(duration)) {
+            const mins = Math.floor(duration / 60);
+            const secs = Math.floor(duration % 60);
+            durationEl.textContent = `Duración: ${mins}:${secs.toString().padStart(2, '0')}`;
+        } else {
+            durationEl.textContent = 'Duración: --:--';
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        setTimeout(() => {
+            if (typeof videojs !== 'function') {
+                document.getElementById('videoTitle').textContent = 'Error: Video.js no cargó.';
+                return;
+            }
+
+            try {
+                player = videojs('videoPlayer', {
+                    controls: true,
+                    autoplay: false,
+                    preload: 'auto',
+                    playsinline: true
+                });
+
+                // Iniciar la app
+                generateEpisodes();
+            } catch (e) {
+                console.error('Error al inicializar Video.js:', e);
+                document.getElementById('videoTitle').textContent = 'No se pudo iniciar el reproductor.';
+            }
+        }, 100);
+    });
+
+    function generateEpisodes() {
+        const container = document.getElementById('episodesContainer');
+        container.innerHTML = '';
+        
+        for (let i = 0; i < totalEpisodes; i++) {
+            const episodeNumber = START_EPISODE + i;
+            const episodeCard = document.createElement('div');
+            episodeCard.className = 'episode-card';
+            episodeCard.dataset.episode = episodeNumber;
+            
+            episodeCard.innerHTML = `
+                <div class="episode-number">Capítulo ${episodeNumber}</div>
+                <div class="episode-title">Episodio ${episodeNumber}</div>
+                <div class="episode-duration">
+                    <svg class="play-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="5,3 19,12 5,21"></polygon>
+                    </svg>
+                    Reproducir
+                </div>
+            `;
+            
+            episodeCard.addEventListener('click', () => playEpisode(episodeNumber));
+            container.appendChild(episodeCard);
+        }
+    }
+
+    function playEpisode(episodeNumber) {
+        if (!player) {
+            console.warn('Reproductor no inicializado');
+            return;
+        }
+
+        const videoTitle = document.getElementById('videoTitle');
+        videoTitle.textContent = `Cargando Episodio ${episodeNumber}...`;
+
+        // ✅ Limpiar listeners anteriores para evitar acumulación
+        player.off('loadedmetadata', player.__onLoadedMetadata);
+        player.off('error', player.__onError);
+
+        // ✅ Definir nuevo listener
+        const onLoaded = () => {
+            onVideoReady(episodeNumber);
+        };
+        const onError = () => {
+            videoTitle.textContent = `Error: Episodio ${episodeNumber} no disponible`;
+        };
+
+        // Guardar referencias para limpiar después
+        player.__onLoadedMetadata = onLoaded;
+        player.__onError = onError;
+
+        // ✅ Asignar nuevos listeners
+        player.one('loadedmetadata', onLoaded);
+        player.one('error', onError);
+
+        // ✅ Cambiar fuente
+        player.src({
+            src: getEpisodeUrl(episodeNumber),
+            type: 'video/mp4'
+        });
+
+        player.load();
+        player.play().catch(e => {
+            console.warn("Reproducción automática bloqueada o fallida:", e);
+            // El error ya lo maneja el listener 'error' de Video.js
+        });
+
+        currentEpisode = episodeNumber;
+        updateNavigationButtons();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function updateNavigationButtons() {
+        const prevButton = document.getElementById('prevButton');
+        const nextButton = document.getElementById('nextButton');
+        
+        if (!currentEpisode) {
+            prevButton.disabled = true;
+            nextButton.disabled = true;
+            return;
+        }
+        
+        const episodeIndex = currentEpisode - START_EPISODE;
+        
+        if (episodeIndex > 0) {
+            prevButton.disabled = false;
+            prevButton.onclick = () => playEpisode(currentEpisode - 1);
+        } else {
+            prevButton.disabled = true;
+            prevButton.onclick = null;
+        }
+        
+        if (episodeIndex < totalEpisodes - 1) {
+            nextButton.disabled = false;
+            nextButton.onclick = () => playEpisode(currentEpisode + 1);
+        } else {
+            nextButton.disabled = true;
+            nextButton.onclick = null;
+        }
+    }
+</script>
+</body>
+</html>
