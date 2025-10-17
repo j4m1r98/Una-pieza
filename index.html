@@ -7,6 +7,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- 🔹 Video.js CSS -->
     <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet">
+    <!-- 🔹 Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -80,52 +82,6 @@
             left: 0;
             width: 100%;
             height: 100%;
-        }
-
-        /* 🔹 Botones de salto */
-        .skip-controls {
-            position: absolute;
-            top: 50%;
-            left: 0;
-            width: 100%;
-            display: flex;
-            justify-content: space-between;
-            padding: 0 20px;
-            pointer-events: none;
-        }
-
-        .skip-btn {
-            background: rgba(0, 0, 0, 0.7);
-            color: white;
-            border: none;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            font-size: 1.4rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            pointer-events: auto;
-            opacity: 0;
-            transition: opacity 0.3s, transform 0.2s;
-        }
-
-        .skip-btn:hover,
-        .skip-btn:focus {
-            background: rgba(0, 0, 0, 0.9);
-            transform: scale(1.1);
-        }
-
-        .video-container:hover .skip-btn {
-            opacity: 1;
-        }
-
-        /* En móviles y TVs, hacer botones siempre visibles */
-        @media (max-width: 768px) {
-            .skip-btn {
-                opacity: 0.9 !important;
-            }
         }
         
         .video-controls-bottom {
@@ -261,6 +217,24 @@
             width: 16px;
             height: 16px;
         }
+
+        /* 🔹 Estilos para botones de salto en barra de Video.js */
+        .vjs-skip-back .material-icons,
+        .vjs-skip-forward .material-icons {
+            font-size: 18px;
+            line-height: 1;
+            cursor: pointer;
+            vertical-align: middle;
+        }
+
+        .vjs-control-bar .vjs-skip-back,
+        .vjs-control-bar .vjs-skip-forward {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 34px;
+            padding: 0;
+        }
         
         /* Responsive */
         @media (max-width: 768px) {
@@ -306,12 +280,6 @@
                         Para ver este video, habilita JavaScript o usa un navegador que lo soporte.
                     </p>
                 </video>
-
-                <!-- 🔹 Botones de salto -->
-                <div class="skip-controls">
-                    <button class="skip-btn skip-back" id="skipBack">⏪</button>
-                    <button class="skip-btn skip-forward" id="skipForward">⏩</button>
-                </div>
             </div>
             <div class="video-controls-bottom">
                 <div class="video-title" id="videoTitle">Selecciona un capítulo para reproducir</div>
@@ -343,7 +311,7 @@
     <script>
         // ✅ Corregida: sin espacios extra
         function getEpisodeUrl(episodeNumber) {
-            return `https://www.opmya.es/caponline/episodios_720p/OnePiece_Jap-Sub-Esp_S050_Ep.${episodeNumber}-720p.mp4`;
+            return 'https://www.opmya.es/caponline/episodios_720p/OnePiece_Jap-Sub-Esp_S050_Ep.' + episodeNumber + '-720p.mp4';
         }
 
         const START_EPISODE = 1089;
@@ -353,86 +321,125 @@
         let player = null;
 
         function onVideoReady(episodeNumber) {
-            const videoTitle = document.getElementById('videoTitle');
-            const durationEl = document.getElementById('videoDuration');
+            var videoTitle = document.getElementById('videoTitle');
+            var durationEl = document.getElementById('videoDuration');
 
-            videoTitle.textContent = `Episodio ${episodeNumber}`;
+            videoTitle.textContent = 'Episodio ' + episodeNumber;
 
-            const duration = player.duration();
+            var duration = player.duration();
             if (isFinite(duration)) {
-                const mins = Math.floor(duration / 60);
-                const secs = Math.floor(duration % 60);
-                durationEl.textContent = `Duración: ${mins}:${secs.toString().padStart(2, '0')}`;
+                var mins = Math.floor(duration / 60);
+                var secs = Math.floor(duration % 60);
+                durationEl.textContent = 'Duración: ' + mins + ':' + (secs < 10 ? '0' : '') + secs;
             } else {
                 durationEl.textContent = 'Duración: --:--';
             }
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            setTimeout(() => {
-                if (typeof videojs !== 'function') {
-                    document.getElementById('videoTitle').textContent = 'Error: Video.js no cargó.';
-                    return;
+        // 🔹 Compatible con Tizen: sin operador ?.
+        function createSkipButtons(player) {
+            // Botón retroceder 10s
+            var skipBackBtn = player.controlBar.addChild('button', {
+                clickHandler: function() {
+                    var ct = player.currentTime();
+                    player.currentTime(Math.max(0, ct - 10));
                 }
+            });
+            skipBackBtn.el().innerHTML = '<span class="material-icons">replay_10</span>';
+            skipBackBtn.el().className += ' vjs-skip-back vjs-control vjs-button';
+            skipBackBtn.controlText('Retroceder 10 segundos');
 
-                try {
-                    player = videojs('videoPlayer', {
-                        controls: true,
-                        autoplay: false,
-                        preload: 'auto',
-                        playsinline: true
-                    });
-
-                    // ✅ Inicializar botones de salto
-                    player.ready(() => {
-                        document.getElementById('skipBack').addEventListener('click', () => {
-                            if (!player) return;
-                            const currentTime = player.currentTime();
-                            player.currentTime(Math.max(0, currentTime - 10));
-                        });
-
-                        document.getElementById('skipForward').addEventListener('click', () => {
-                            if (!player) return;
-                            const currentTime = player.currentTime();
-                            const duration = player.duration();
-                            if (isFinite(duration)) {
-                                player.currentTime(Math.min(duration, currentTime + 10));
-                            } else {
-                                player.currentTime(currentTime + 10);
-                            }
-                        });
-                    });
-
-                    generateEpisodes();
-                } catch (e) {
-                    console.error('Error al inicializar Video.js:', e);
-                    document.getElementById('videoTitle').textContent = 'No se pudo iniciar el reproductor.';
+            // Botón adelantar 10s
+            var skipForwardBtn = player.controlBar.addChild('button', {
+                clickHandler: function() {
+                    var ct = player.currentTime();
+                    var duration = player.duration();
+                    if (isFinite(duration)) {
+                        player.currentTime(Math.min(duration, ct + 10));
+                    } else {
+                        player.currentTime(ct + 10);
+                    }
                 }
-            }, 100);
-        });
+            });
+            skipForwardBtn.el().innerHTML = '<span class="material-icons">forward_10</span>';
+            skipForwardBtn.el().className += ' vjs-skip-forward vjs-control vjs-button';
+            skipForwardBtn.controlText('Adelantar 10 segundos');
+
+            // 🔹 Búsqueda segura del panel de volumen (sin ?.)
+            var volumePanel = null;
+            if (player.controlBar.volumePanel && typeof player.controlBar.volumePanel.el === 'function') {
+                volumePanel = player.controlBar.volumePanel.el();
+            } else if (player.controlBar.volumeButton && typeof player.controlBar.volumeButton.el === 'function') {
+                volumePanel = player.controlBar.volumeButton.el();
+            }
+
+            if (volumePanel && volumePanel.parentNode) {
+                volumePanel.parentNode.insertBefore(skipBackBtn.el(), volumePanel);
+                volumePanel.parentNode.insertBefore(skipForwardBtn.el(), volumePanel);
+            }
+        }
+
+        // 🔹 Inicialización segura para Tizen
+        function initApp() {
+            if (typeof videojs !== 'function') {
+                document.getElementById('videoTitle').textContent = 'Error: Video.js no cargó.';
+                generateEpisodes(); // Aseguramos que la lista se muestre aunque falle el reproductor
+                return;
+            }
+
+            try {
+                player = videojs('videoPlayer', {
+                    controls: true,
+                    autoplay: false,
+                    preload: 'auto',
+                    playsinline: true
+                });
+
+                player.ready(function() {
+                    createSkipButtons(player);
+                });
+
+                generateEpisodes();
+            } catch (e) {
+                console.error('Error al inicializar Video.js:', e);
+                document.getElementById('videoTitle').textContent = 'No se pudo iniciar el reproductor.';
+                generateEpisodes(); // ¡Importante! Mostrar lista aunque falle el reproductor
+            }
+        }
+
+        // Usar window.onload como fallback más robusto para TVs
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() {
+                setTimeout(initApp, 150);
+            });
+        } else {
+            setTimeout(initApp, 150);
+        }
 
         function generateEpisodes() {
-            const container = document.getElementById('episodesContainer');
+            var container = document.getElementById('episodesContainer');
             container.innerHTML = '';
             
-            for (let i = 0; i < totalEpisodes; i++) {
-                const episodeNumber = START_EPISODE + i;
-                const episodeCard = document.createElement('div');
+            for (var i = 0; i < totalEpisodes; i++) {
+                var episodeNumber = START_EPISODE + i;
+                var episodeCard = document.createElement('div');
                 episodeCard.className = 'episode-card';
-                episodeCard.dataset.episode = episodeNumber;
+                episodeCard.setAttribute('data-episode', episodeNumber);
                 
-                episodeCard.innerHTML = `
-                    <div class="episode-number">Capítulo ${episodeNumber}</div>
-                    <div class="episode-title">Episodio ${episodeNumber}</div>
-                    <div class="episode-duration">
-                        <svg class="play-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polygon points="5,3 19,12 5,21"></polygon>
-                        </svg>
-                        Reproducir
-                    </div>
-                `;
+                episodeCard.innerHTML = 
+                    '<div class="episode-number">Capítulo ' + episodeNumber + '</div>' +
+                    '<div class="episode-title">Episodio ' + episodeNumber + '</div>' +
+                    '<div class="episode-duration">' +
+                        '<svg class="play-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' +
+                            '<polygon points="5,3 19,12 5,21"></polygon>' +
+                        '</svg>' +
+                        'Reproducir' +
+                    '</div>';
                 
-                episodeCard.addEventListener('click', () => playEpisode(episodeNumber));
+                episodeCard.addEventListener('click', function() {
+                    var ep = parseInt(this.getAttribute('data-episode'), 10);
+                    playEpisode(ep);
+                });
                 container.appendChild(episodeCard);
             }
         }
@@ -443,17 +450,22 @@
                 return;
             }
 
-            const videoTitle = document.getElementById('videoTitle');
-            videoTitle.textContent = `Cargando Episodio ${episodeNumber}...`;
+            var videoTitle = document.getElementById('videoTitle');
+            videoTitle.textContent = 'Cargando Episodio ' + episodeNumber + '...';
 
-            player.off('loadedmetadata', player.__onLoadedMetadata);
-            player.off('error', player.__onError);
+            // Limpiar listeners anteriores
+            if (player.__onLoadedMetadata) {
+                player.off('loadedmetadata', player.__onLoadedMetadata);
+            }
+            if (player.__onError) {
+                player.off('error', player.__onError);
+            }
 
-            const onLoaded = () => {
+            var onLoaded = function() {
                 onVideoReady(episodeNumber);
             };
-            const onError = () => {
-                videoTitle.textContent = `Error: Episodio ${episodeNumber} no disponible`;
+            var onError = function() {
+                videoTitle.textContent = 'Error: Episodio ' + episodeNumber + ' no disponible';
             };
 
             player.__onLoadedMetadata = onLoaded;
@@ -468,7 +480,7 @@
             });
 
             player.load();
-            player.play().catch(e => {
+            player.play().catch(function(e) {
                 console.warn("Reproducción automática fallida:", e);
             });
 
@@ -478,8 +490,8 @@
         }
 
         function updateNavigationButtons() {
-            const prevButton = document.getElementById('prevButton');
-            const nextButton = document.getElementById('nextButton');
+            var prevButton = document.getElementById('prevButton');
+            var nextButton = document.getElementById('nextButton');
             
             if (!currentEpisode) {
                 prevButton.disabled = true;
@@ -487,11 +499,11 @@
                 return;
             }
             
-            const episodeIndex = currentEpisode - START_EPISODE;
+            var episodeIndex = currentEpisode - START_EPISODE;
             
             if (episodeIndex > 0) {
                 prevButton.disabled = false;
-                prevButton.onclick = () => playEpisode(currentEpisode - 1);
+                prevButton.onclick = function() { playEpisode(currentEpisode - 1); };
             } else {
                 prevButton.disabled = true;
                 prevButton.onclick = null;
@@ -499,7 +511,7 @@
             
             if (episodeIndex < totalEpisodes - 1) {
                 nextButton.disabled = false;
-                nextButton.onclick = () => playEpisode(currentEpisode + 1);
+                nextButton.onclick = function() { playEpisode(currentEpisode + 1); };
             } else {
                 nextButton.disabled = true;
                 nextButton.onclick = null;
@@ -508,6 +520,3 @@
     </script>
 </body>
 </html>
-
-tabindex="0"
-
