@@ -46,7 +46,7 @@
             font-size: 1.1rem;
             opacity: 0.8;
             margin-top: 20px;
-            margin-bottom: 15px;
+            margin-bottom: 25px;
         }
         
         /* Reproductor de video */
@@ -158,6 +158,7 @@
         .anime-tabs {
             display: flex;                       
             flex-wrap: wrap;
+            margin-bottom: 10px;
             justify-content: center;
         }
         
@@ -369,16 +370,16 @@
     <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
 
     <script>
-        // Datos de UNA PIEZA
+        // Datos de UNA PIEZA (actualizado según el código original)
         function getOnePieceUrl(episodeNumber) {
-            return `https://www.opmya.es/caponline/episodios_720p/OnePiece_Jap-Sub-Esp_S050_Ep.${episodeNumber}-720p.mp4`;
+            return 'https://www.opmya.es/caponline/episodios_720p/OnePiece_Jap-Sub-Esp_S050_Ep.' + episodeNumber + '-720p.mp4';
         }
 
         const ONE_PIECE_DATA = {
             type: 'episodes',
             range: { start: 1089, end: 1146 },
             getUrl: getOnePieceUrl,
-            getTitle: (ep) => `Episodio ${ep}`
+            getTitle: (ep) => 'Episodio ' + ep
         };
 
         // Datos de Maestro Ancestral del Camino Demoníaco
@@ -427,7 +428,7 @@
                     "https://filemoon.to/e/5y6epz9swxs5"
                 ]
             },
-            getEpisodeTitle: (season, episode) => `Temporada ${season} - Episodio ${episode}`
+            getEpisodeTitle: (season, episode) => 'Temporada ' + season + ' - Episodio ' + episode
         };
 
         let currentAnime = 'onepiece';
@@ -435,17 +436,21 @@
         let currentEpisode = null;
         let player = null;
 
-        function onVideoReady() {
-            var videoTitle = document.getElementById('videoTitle');
-            var durationEl = document.getElementById('videoDuration');
+        function onVideoReady(episodeNumber) {
+            if (currentAnime === 'onepiece') {
+                var videoTitle = document.getElementById('videoTitle');
+                var durationEl = document.getElementById('videoDuration');
 
-            var duration = player.duration();
-            if (isFinite(duration)) {
-                var mins = Math.floor(duration / 60);
-                var secs = Math.floor(duration % 60);
-                durationEl.textContent = 'Duración: ' + mins + ':' + (secs < 10 ? '0' : '') + secs;
-            } else {
-                durationEl.textContent = 'Duración: --:--';
+                videoTitle.textContent = 'Episodio ' + episodeNumber;
+
+                var duration = player.duration();
+                if (isFinite(duration)) {
+                    var mins = Math.floor(duration / 60);
+                    var secs = Math.floor(duration % 60);
+                    durationEl.textContent = 'Duración: ' + mins + ':' + (secs < 10 ? '0' : '') + secs;
+                } else {
+                    durationEl.textContent = 'Duración: --:--';
+                }
             }
         }
 
@@ -540,6 +545,9 @@
                 document.getElementById('videoContainer').style.display = 'block';
                 document.getElementById('iframeContainer').style.display = 'none';
                 
+                // Mostrar duración para One Piece
+                document.getElementById('videoDuration').style.display = 'block';
+                
                 seasonTabsContainer.innerHTML = '<div class="season-tab active" data-season="egghead">EggHead</div>';
                 currentSeason = 'egghead';
                 generateOnePieceEpisodes();
@@ -548,15 +556,20 @@
                 document.getElementById('videoContainer').style.display = 'none';
                 document.getElementById('iframeContainer').style.display = 'block';
                 
+                // Ocultar duración para Maestro (no se puede detectar en iframe)
+                document.getElementById('videoDuration').style.display = 'none';
+                
                 seasonTabsContainer.innerHTML = '';
                 const seasons = Object.keys(MAESTRO_DATA.seasons).map(Number).sort((a,b) => a-b);
                 seasons.forEach(seasonNum => {
                     const isActive = seasonNum === 1;
                     const seasonTab = document.createElement('div');
-                    seasonTab.className = `season-tab ${isActive ? 'active' : ''}`;
+                    seasonTab.className = 'season-tab ' + (isActive ? 'active' : '');
                     seasonTab.dataset.season = seasonNum;
-                    seasonTab.textContent = `Temporada ${seasonNum}`;
-                    seasonTab.addEventListener('click', () => switchSeason(seasonNum));
+                    seasonTab.textContent = 'Temporada ' + seasonNum;
+                    seasonTab.addEventListener('click', function() {
+                        switchSeason(seasonNum);
+                    });
                     seasonTabsContainer.appendChild(seasonTab);
                 });
                 currentSeason = 1;
@@ -565,7 +578,9 @@
         }
 
         function switchSeason(seasonNum) {
-            document.querySelectorAll('.season-tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.season-tab').forEach(function(tab) {
+                tab.classList.remove('active');
+            });
             event.target.classList.add('active');
             currentSeason = seasonNum;
             generateMaestroEpisodes(seasonNum);
@@ -577,24 +592,28 @@
             
             const start = ONE_PIECE_DATA.range.start;
             const end = ONE_PIECE_DATA.range.end;
+            const totalEpisodes = end - start + 1;
             
-            for (let i = start; i <= end; i++) {
-                const episodeCard = document.createElement('div');
+            for (var i = 0; i < totalEpisodes; i++) {
+                var episodeNumber = start + i;
+                var episodeCard = document.createElement('div');
                 episodeCard.className = 'episode-card';
-                episodeCard.dataset.episode = i;
+                episodeCard.setAttribute('data-episode', episodeNumber);
                 
-                episodeCard.innerHTML = `
-                    <div class="episode-number">Capítulo ${i}</div>
-                    <div class="episode-title">${ONE_PIECE_DATA.getTitle(i)}</div>
-                    <div class="episode-duration">
-                        <svg class="play-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polygon points="5,3 19,12 5,21"></polygon>
-                        </svg>
-                        Reproducir
-                    </div>
-                `;
+                episodeCard.innerHTML = 
+                    '<div class="episode-number">Capítulo ' + episodeNumber + '</div>' +
+                    '<div class="episode-title">' + ONE_PIECE_DATA.getTitle(episodeNumber) + '</div>' +
+                    '<div class="episode-duration">' +
+                        '<svg class="play-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' +
+                            '<polygon points="5,3 19,12 5,21"></polygon>' +
+                        '</svg>' +
+                        'Reproducir' +
+                    '</div>';
                 
-                episodeCard.addEventListener('click', () => playOnePieceEpisode(i));
+                episodeCard.addEventListener('click', function() {
+                    var ep = parseInt(this.getAttribute('data-episode'), 10);
+                    playOnePieceEpisode(ep);
+                });
                 container.appendChild(episodeCard);
             }
         }
@@ -611,36 +630,66 @@
                 episodeCard.dataset.season = seasonNum;
                 episodeCard.dataset.episode = i + 1;
                 
-                episodeCard.innerHTML = `
-                    <div class="episode-number">Capítulo ${i + 1}</div>
-                    <div class="episode-title">${MAESTRO_DATA.getEpisodeTitle(seasonNum, i + 1)}</div>
-                    <div class="episode-duration">
-                        <svg class="play-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polygon points="5,3 19,12 5,21"></polygon>
-                        </svg>
-                        Reproducir
-                    </div>
-                `;
+                episodeCard.innerHTML = 
+                    '<div class="episode-number">Capítulo ' + (i + 1) + '</div>' +
+                    '<div class="episode-title">' + MAESTRO_DATA.getEpisodeTitle(seasonNum, i + 1) + '</div>' +
+                    '<div class="episode-duration">' +
+                        '<svg class="play-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' +
+                            '<polygon points="5,3 19,12 5,21"></polygon>' +
+                        '</svg>' +
+                        'Reproducir' +
+                    '</div>';
                 
-                episodeCard.addEventListener('click', () => playMaestroEpisode(seasonNum, i + 1));
+                episodeCard.addEventListener('click', function() {
+                    playMaestroEpisode(seasonNum, i + 1);
+                });
                 container.appendChild(episodeCard);
             }
         }
 
         function playOnePieceEpisode(episodeNumber) {
-            if (!player) return;
-            
-            const videoTitle = document.getElementById('videoTitle');
-            videoTitle.textContent = `Cargando Episodio ${episodeNumber}...`;
-            
+            if (!player) {
+                console.warn('Reproductor no inicializado');
+                return;
+            }
+
+            var videoTitle = document.getElementById('videoTitle');
+            videoTitle.textContent = 'Cargando Episodio ' + episodeNumber + '...';
+     
+            // 🔹 AQUÍ ESTÁ EL CAMBIO: Resetear la duración a --:--
+            document.getElementById('videoDuration').textContent = 'Duración: --:--';
+
+            // Limpiar listeners anteriores (mejora del código original)
+            if (player.__onLoadedMetadata) {
+                player.off('loadedmetadata', player.__onLoadedMetadata);
+            }
+            if (player.__onError) {
+                player.off('error', player.__onError);
+            }
+
+            var onLoaded = function() {
+                onVideoReady(episodeNumber);
+            };
+            var onError = function() {
+                videoTitle.textContent = 'Error: Episodio ' + episodeNumber + ' no disponible';
+            };
+
+            player.__onLoadedMetadata = onLoaded;
+            player.__onError = onError;
+
+            player.one('loadedmetadata', onLoaded);
+            player.one('error', onError);
+
             player.src({
                 src: ONE_PIECE_DATA.getUrl(episodeNumber),
                 type: 'video/mp4'
             });
-            
+
             player.load();
-            player.play().catch(e => console.warn("Reproducción automática fallida:", e));
-            
+            player.play().catch(function(e) {
+                console.warn("Reproducción automática fallida:", e);
+            });
+
             currentEpisode = episodeNumber;
             updateOnePieceNavigation();
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -648,7 +697,8 @@
 
         function playMaestroEpisode(seasonNum, episodeNum) {
             const videoTitle = document.getElementById('videoTitle');
-            videoTitle.textContent = `Cargando Temporada ${seasonNum} - Episodio ${episodeNum}...`;
+            // No mostrar "Cargando..." para iframe
+            videoTitle.textContent = 'Temporada ' + seasonNum + ' - Episodio ' + episodeNum;
             
             const url = MAESTRO_DATA.seasons[seasonNum][episodeNum - 1];
             
@@ -662,26 +712,34 @@
         }
 
         function updateOnePieceNavigation() {
-            const prevButton = document.getElementById('prevButton');
-            const nextButton = document.getElementById('nextButton');
+            var prevButton = document.getElementById('prevButton');
+            var nextButton = document.getElementById('nextButton');
             
-            const start = ONE_PIECE_DATA.range.start;
-            const end = ONE_PIECE_DATA.range.end;
-            
-            if (currentEpisode <= start) {
+            if (!currentEpisode) {
                 prevButton.disabled = true;
-                prevButton.onclick = null;
-            } else {
-                prevButton.disabled = false;
-                prevButton.onclick = () => playOnePieceEpisode(currentEpisode - 1);
+                nextButton.disabled = true;
+                return;
             }
             
-            if (currentEpisode >= end) {
+            var start = ONE_PIECE_DATA.range.start;
+            var end = ONE_PIECE_DATA.range.end;
+            var episodeIndex = currentEpisode - start;
+            var totalEpisodes = end - start + 1;
+            
+            if (episodeIndex > 0) {
+                prevButton.disabled = false;
+                prevButton.onclick = function() { playOnePieceEpisode(currentEpisode - 1); };
+            } else {
+                prevButton.disabled = true;
+                prevButton.onclick = null;
+            }
+            
+            if (episodeIndex < totalEpisodes - 1) {
+                nextButton.disabled = false;
+                nextButton.onclick = function() { playOnePieceEpisode(currentEpisode + 1); };
+            } else {
                 nextButton.disabled = true;
                 nextButton.onclick = null;
-            } else {
-                nextButton.disabled = false;
-                nextButton.onclick = () => playOnePieceEpisode(currentEpisode + 1);
             }
         }
 
@@ -696,13 +754,13 @@
             // Botón anterior
             if (episodeNum > 1) {
                 prevButton.disabled = false;
-                prevButton.onclick = () => playMaestroEpisode(seasonNum, episodeNum - 1);
+                prevButton.onclick = function() { playMaestroEpisode(seasonNum, episodeNum - 1); };
             } else if (seasonNum > 1) {
                 // Ir a la última temporada anterior
                 const prevSeason = seasonNum - 1;
                 const prevSeasonEpisodes = MAESTRO_DATA.seasons[prevSeason].length;
                 prevButton.disabled = false;
-                prevButton.onclick = () => playMaestroEpisode(prevSeason, prevSeasonEpisodes);
+                prevButton.onclick = function() { playMaestroEpisode(prevSeason, prevSeasonEpisodes); };
             } else {
                 prevButton.disabled = true;
                 prevButton.onclick = null;
@@ -711,12 +769,12 @@
             // Botón siguiente
             if (episodeNum < episodes.length) {
                 nextButton.disabled = false;
-                nextButton.onclick = () => playMaestroEpisode(seasonNum, episodeNum + 1);
+                nextButton.onclick = function() { playMaestroEpisode(seasonNum, episodeNum + 1); };
             } else if (seasonNum < Object.keys(MAESTRO_DATA.seasons).length) {
                 // Ir a la primera episodio de la siguiente temporada
                 const nextSeason = seasonNum + 1;
                 nextButton.disabled = false;
-                nextButton.onclick = () => playMaestroEpisode(nextSeason, 1);
+                nextButton.onclick = function() { playMaestroEpisode(nextSeason, 1); };
             } else {
                 nextButton.disabled = true;
                 nextButton.onclick = null;
@@ -724,9 +782,11 @@
         }
 
         // Manejar clic en pestañas de animes
-        document.querySelectorAll('.anime-tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                document.querySelectorAll('.anime-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.anime-tab').forEach(function(tab) {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.anime-tab').forEach(function(t) {
+                    t.classList.remove('active');
+                });
                 tab.classList.add('active');
                 currentAnime = tab.dataset.anime;
                 currentEpisode = null;
