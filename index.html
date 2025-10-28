@@ -232,7 +232,7 @@
             transition: all 0.3s ease;
             border: 1px solid rgba(255,255,255,0.1);
         }        
-       
+        
         .episode-card:hover {
             background: rgba(255,255,255,0.15);
             transform: translateY(-3px);
@@ -312,6 +312,7 @@
         <div class="anime-tabs" id="animeTabs">
             <div class="anime-tab active" data-anime="onepiece">UNA PIEZA</div>
             <div class="anime-tab" data-anime="maestro">Maestro Ancestral del Camino Demoníaco</div>
+            <div class="anime-tab" data-anime="danmachi">DANMACHI</div>
         </div>
         </header>
         
@@ -428,7 +429,60 @@
                     "https://filemoon.to/e/5y6epz9swxs5"
                 ]
             },
-            getEpisodeTitle: (season, episode) => 'Temporada ' + season + ' - Episodio ' + episode
+            getEpisodeTitle: (season, episode) => 'Episodio ' + episode
+        };
+
+        // Datos de DANMACHI
+        const DANMACHI_DATA = {
+            type: 'seasons',
+            seasons: {
+                1: [ // Temporada 4 Parte 1
+                    { title: "La noche antes de la partida", url: "https://drive.google.com/file/d/1AeM5OOVG8yDMmSCHaOp7INSJllnD9e7Z/preview" },
+                    { title: "Cataratas Gigantes", url: "https://drive.google.com/file/d/1ntVu-753tgFNzATCpOsnZ-VKuGP6EMEC/preview" },
+                    { title: "Parásito", url: "https://drive.google.com/file/d/19JnCN3KUMjq2ZrC0GpKKVrHcTSlqauhU/preview" },
+                    { title: "Sirena", url: "https://drive.google.com/file/d/1_qMi2XSPQj11n_y5iwM5HTwd30xmsxn4/preview" },
+                    { title: "El héroe de la flama divina", url: "https://drive.google.com/file/d/1ZVrcIixDnXiHhtpamgxdZyqvwVJ_7Qv7/preview" },
+                    { title: "Pata de conejo", url: "https://drive.google.com/file/d/1S35aBES1l23GWaGVWjRT-NMcnoeJ602j/preview" },
+                    { title: "Sueño profético", url: "https://drive.google.com/file/d/1-LXF2edBAAHZMsl2FfEqLXoijlPQTekB/preview" },
+                    { title: "Confusión", url: "https://drive.google.com/file/d/1X1t4yHq7J8N_2VQNvgi-6z6Av9qPiU9-/preview" },
+                    { title: "La calamidad", url: "https://drive.google.com/file/d/10zCd0-AoJlpigUvdqfmMdMbER8FSraB4/preview" },
+                    { title: "El Destructor", url: "https://drive.google.com/file/d/1VY8dhCma1lE89ZOLkKA3xz7wREoz4fxF/preview" },
+                    { title: "Crueldad", url: "https://drive.google.com/file/d/1FHEiaxwhK0c82jajDlG2iYBLZHm0fDKK/preview" }
+                ],
+                2: [ // Temporada 4 Parte 2
+                    { title: "Canción de desesperación", url: "https://drive.google.com/file/d/17k6H14b7-v1qVUNdCtgsaUsxrBlM2Lwe/preview" },
+                    { title: "Sacrificio", url: "https://drive.google.com/file/d/1SDLN8LP3P4dRHHXCYqGkDT1NcNZZlp_G/preview" },
+                    { title: "Amistad", url: "https://drive.google.com/file/d/19uEzJGxWXz39l3nsVZaMi2c2Gy4rNuS8/preview" },
+                    { title: "Flama eterna", url: "https://drive.google.com/file/d/1p2zWZE7_QjqOla8RqjYv8Ng3qRo8blZ8/preview" },
+                    { title: "Shikou", url: "https://drive.google.com/file/d/1Dl3o2X5ceSzN_AzQIlaIn9vU_ai6UHNa/preview" },
+                    { title: "Laberinto Blanco", url: "https://drive.google.com/file/d/1k0BxPUWk7GWGFGmqFXgciB1_RoqGHHUi/preview" },
+                    { title: "Desesperación", url: "https://drive.google.com/file/d/1zyFZyHKHO7dHBXVNK4KmKbKm3v_nNDnq/preview" },
+                    { title: "El Coliseo", url: "https://drive.google.com/file/d/1qs-eaKLrbtNqLixCfrGuqnEMlHNdei_w/preview" },
+                    { title: "Muerte heroica", url: "https://drive.google.com/file/d/1abrl5DboWMW7Wq21FA9mal9jKztoN7Jr/preview" },
+                    { title: "Ensueño", url: "https://drive.google.com/file/d/1ckEKApUBvQqjEav_H4l2hDQdK19dOmPv/preview" },
+                    { title: "Estallido de estrellas", url: "https://drive.google.com/file/d/1Mzy-xG8Ie1BNWq_i48Pl7jIOEyOgRN8P/preview" }
+                ],
+                3: [ // Temporada 5
+                    { title: "Syr", url: "https://drive.google.com/file/d/1PZQqje0JkPe1h_KzoJzg3m5lY3WK8nYF/preview" },
+                    { title: "Entrenamiento", url: "https://drive.google.com/file/d/1XttYvBWGBVZLsc9ZHJw8SjTufAYVjP1B/preview" },
+                    { title: "Compañero", url: "https://drive.google.com/file/d/1WPQytzZVNvlcYJ49DVY8_T0-PWJiyN-_/preview" },
+                    { title: "La Diosa y La Joven", url: "https://drive.google.com/file/d/1xFEzgenZSx9DgGwJnOgwtli3-RC_DotR/preview" },
+                    { title: "Invasión", url: "https://drive.google.com/file/d/1vHu195xX-9iM6QSiM3STbeLCRvA146aK/preview" },
+                    { title: "Ciudad Alterada", url: "https://drive.google.com/file/d/1k665Dorqw_D3YCZudEDE5yLNiH84DsA3/preview" },
+                    { title: "Separación", url: "https://drive.google.com/file/d/1_qq720qrB4IYZ-z5ilyzJGmF9-dKSUoQ/preview" },
+                    { title: "Su ideal", url: "https://drive.google.com/file/d/1uBy-IpRYWcl3Y_mJr0Bnl0X_7tNvaXPn/preview" },
+                    { title: "Altar del Fuego Sagrado", url: "https://drive.google.com/file/d/1efWiuXPFaFBkpoo6VryZdPadzTit6tFk/preview" },
+                    { title: "Juego de Guerra", url: "https://drive.google.com/file/d/1XlEqj01aK8o7L5nZmGGCrblZDOKPvNjF/preview" },
+                    { title: "Infierno", url: "https://drive.google.com/file/d/1Muc8FMTs9fhvz3mtKzvGzdRP-Fb_lBlc/preview" },
+                    { title: "Legado", url: "https://drive.google.com/file/d/1xO_eD3l-LQ-IoV2-TachQNBlYdkcU-b9/preview" },
+                    { title: "Venganza", url: "https://drive.google.com/file/d/1Rv_wfXminViD6Qe5Y1Y6Ro8f_NAY8GhW/preview" },
+                    { title: "Guerreros de la Diosa", url: "https://drive.google.com/file/d/1Lo3s7vCaWFToG3eDi_9zhTjWLl4_N-42/preview" },
+                    { title: "Primer Amor", url: "https://drive.google.com/file/d/12N70UrIZ_BadMXgrhJurw9hLWGQ_kIiP/preview" }
+                ]
+            },
+            getEpisodeTitle: (season, episode) => {
+                return 'Episodio ' + episode + ': ' + DANMACHI_DATA.seasons[season][episode-1].title;
+            }
         };
 
         let currentAnime = 'onepiece';
@@ -574,6 +628,36 @@
                 });
                 currentSeason = 1;
                 generateMaestroEpisodes(1);
+            } else if (currentAnime === 'danmachi') {
+                // Mostrar iframe y ocultar video.js
+                document.getElementById('videoContainer').style.display = 'none';
+                document.getElementById('iframeContainer').style.display = 'block';
+                
+                // Ocultar duración para DanMachi (no se puede detectar en iframe)
+                document.getElementById('videoDuration').style.display = 'none';
+                
+                seasonTabsContainer.innerHTML = '';
+                const seasons = Object.keys(DANMACHI_DATA.seasons).map(Number).sort((a,b) => a-b);
+                seasons.forEach(seasonNum => {
+                    const isActive = seasonNum === 1;
+                    const seasonTab = document.createElement('div');
+                    seasonTab.className = 'season-tab ' + (isActive ? 'active' : '');
+                    seasonTab.dataset.season = seasonNum;
+                    
+                    // Nombres especiales para las temporadas de DanMachi
+                    let seasonName = '';
+                    if (seasonNum === 1) seasonName = 'T4 Parte 1';
+                    else if (seasonNum === 2) seasonName = 'T4 Parte 2';
+                    else if (seasonNum === 3) seasonName = 'Temporada 5';
+                    
+                    seasonTab.textContent = seasonName;
+                    seasonTab.addEventListener('click', function() {
+                        switchSeason(seasonNum);
+                    });
+                    seasonTabsContainer.appendChild(seasonTab);
+                });
+                currentSeason = 1;
+                generateDanMachiEpisodes(1);
             }
         }
 
@@ -583,7 +667,12 @@
             });
             event.target.classList.add('active');
             currentSeason = seasonNum;
-            generateMaestroEpisodes(seasonNum);
+            
+            if (currentAnime === 'maestro') {
+                generateMaestroEpisodes(seasonNum);
+            } else if (currentAnime === 'danmachi') {
+                generateDanMachiEpisodes(seasonNum);
+            }
         }
 
         function generateOnePieceEpisodes() {
@@ -647,6 +736,35 @@
             }
         }
 
+        function generateDanMachiEpisodes(seasonNum) {
+            const container = document.getElementById('episodesContainer');
+            container.innerHTML = '';
+            
+            const episodes = DANMACHI_DATA.seasons[seasonNum];
+            
+            for (let i = 0; i < episodes.length; i++) {
+                const episodeCard = document.createElement('div');
+                episodeCard.className = 'episode-card';
+                episodeCard.dataset.season = seasonNum;
+                episodeCard.dataset.episode = i + 1;
+                
+                episodeCard.innerHTML = 
+                    '<div class="episode-number">Capítulo ' + (i + 1) + '</div>' +
+                    '<div class="episode-title">' + DANMACHI_DATA.getEpisodeTitle(seasonNum, i + 1) + '</div>' +
+                    '<div class="episode-duration">' +
+                        '<svg class="play-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' +
+                            '<polygon points="5,3 19,12 5,21"></polygon>' +
+                        '</svg>' +
+                        'Reproducir' +
+                    '</div>';
+                
+                episodeCard.addEventListener('click', function() {
+                    playDanMachiEpisode(seasonNum, i + 1);
+                });
+                container.appendChild(episodeCard);
+            }
+        }
+
         function playOnePieceEpisode(episodeNumber) {
             if (!player) {
                 console.warn('Reproductor no inicializado');
@@ -698,7 +816,7 @@
         function playMaestroEpisode(seasonNum, episodeNum) {
             const videoTitle = document.getElementById('videoTitle');
             // No mostrar "Cargando..." para iframe
-            videoTitle.textContent = 'Temporada ' + seasonNum + ' - Episodio ' + episodeNum;
+            videoTitle.textContent = 'Episodio ' + episodeNum;
             
             const url = MAESTRO_DATA.seasons[seasonNum][episodeNum - 1];
             
@@ -708,6 +826,22 @@
             
             currentEpisode = { season: seasonNum, episode: episodeNum };
             updateMaestroNavigation();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function playDanMachiEpisode(seasonNum, episodeNum) {
+            const videoTitle = document.getElementById('videoTitle');
+            // No mostrar "Cargando..." para iframe
+            videoTitle.textContent = DANMACHI_DATA.getEpisodeTitle(seasonNum, episodeNum);
+            
+            const url = DANMACHI_DATA.seasons[seasonNum][episodeNum - 1].url;
+            
+            // Cargar el iframe con la URL del episodio
+            const iframe = document.getElementById('videoIframe');
+            iframe.src = url;
+            
+            currentEpisode = { season: seasonNum, episode: episodeNum };
+            updateDanMachiNavigation();
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
@@ -781,6 +915,44 @@
             }
         }
 
+        function updateDanMachiNavigation() {
+            const prevButton = document.getElementById('prevButton');
+            const nextButton = document.getElementById('nextButton');
+            
+            const seasonNum = currentEpisode.season;
+            const episodeNum = currentEpisode.episode;
+            const episodes = DANMACHI_DATA.seasons[seasonNum];
+            
+            // Botón anterior
+            if (episodeNum > 1) {
+                prevButton.disabled = false;
+                prevButton.onclick = function() { playDanMachiEpisode(seasonNum, episodeNum - 1); };
+            } else if (seasonNum > 1) {
+                // Ir a la última temporada anterior
+                const prevSeason = seasonNum - 1;
+                const prevSeasonEpisodes = DANMACHI_DATA.seasons[prevSeason].length;
+                prevButton.disabled = false;
+                prevButton.onclick = function() { playDanMachiEpisode(prevSeason, prevSeasonEpisodes); };
+            } else {
+                prevButton.disabled = true;
+                prevButton.onclick = null;
+            }
+            
+            // Botón siguiente
+            if (episodeNum < episodes.length) {
+                nextButton.disabled = false;
+                nextButton.onclick = function() { playDanMachiEpisode(seasonNum, episodeNum + 1); };
+            } else if (seasonNum < Object.keys(DANMACHI_DATA.seasons).length) {
+                // Ir a la primera episodio de la siguiente temporada
+                const nextSeason = seasonNum + 1;
+                nextButton.disabled = false;
+                nextButton.onclick = function() { playDanMachiEpisode(nextSeason, 1); };
+            } else {
+                nextButton.disabled = true;
+                nextButton.onclick = null;
+            }
+        }
+
         // Manejar clic en pestañas de animes
         document.querySelectorAll('.anime-tab').forEach(function(tab) {
             tab.addEventListener('click', function() {
@@ -796,7 +968,7 @@
                 document.getElementById('nextButton').disabled = true;
                 
                 // Limpiar el iframe al cambiar de anime
-                if (currentAnime === 'onepiece') {
+                if (currentAnime !== 'onepiece') {
                     document.getElementById('videoIframe').src = '';
                 }
             });
