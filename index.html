@@ -172,7 +172,7 @@
         .seasons-tabs {
             display: flex; 
             margin-top: 30px;           
- flex-wrap: wrap;
+            flex-wrap: wrap;
             justify-content: center;
         }
         
@@ -349,26 +349,48 @@
     <script>
         // Función para generar URL según el número de capítulo
         function getOnePieceUrl(episodeNumber) {
-            let season = "S050"; // Valor por defecto para capítulos 1089-1155
+            let season = "S050";
+            let episodeStr = episodeNumber;
             
             if (episodeNumber >= 897 && episodeNumber <= 1028) {
                 season = "S047";
             } else if (episodeNumber >= 1029 && episodeNumber <= 1030) {
-                season = "S048-Especial";
+                season = "S048";
+                // Cambiar el número de episodio para 1029 y 1030
+                episodeStr = episodeNumber + "-Especial";
             } else if (episodeNumber >= 1031 && episodeNumber <= 1088) {
                 season = "S049";
             }
-            // Para 1089-1155 ya usa S050 por defecto
             
-            return 'https://www.opmya.es/caponline/episodios_720p/OnePiece_Jap-Sub-Esp_' + season + '_Ep.' + episodeNumber + '-720p.mp4';
+            return 'https://www.opmya.es/caponline/episodios_720p/OnePiece_Jap-Sub-Esp_' + season + '_Ep.' + episodeStr + '-720p.mp4';
         }
 
-        // Datos de ONE PIECE actualizados según los requerimientos
+        // Función para obtener el título del episodio
+        function getOnePieceTitle(episodeNumber) {
+            if (episodeNumber === 1029) {
+                return '1029-Especial';
+            } else if (episodeNumber === 1030) {
+                return '1030-Especial';
+            }
+            return 'Capítulo ' + episodeNumber;
+        }
+
+        // Función para obtener el número de visualización
+        function getDisplayNumber(episodeNumber) {
+            if (episodeNumber === 1029) {
+                return '1029-Especial';
+            } else if (episodeNumber === 1030) {
+                return '1030-Especial';
+            }
+            return episodeNumber;
+        }
+
         const ONE_PIECE_DATA = {
             type: 'episodes',
             range: { start: 897, end: 1155 },
             getUrl: getOnePieceUrl,
-            getTitle: (ep) => 'Capítulo ' + ep
+            getTitle: getOnePieceTitle,
+            getDisplayNumber: getDisplayNumber
         };
 
         let currentAnime = 'onepiece';
@@ -380,7 +402,7 @@
             var videoTitle = document.getElementById('videoTitle');
             var durationEl = document.getElementById('videoDuration');
 
-            videoTitle.textContent = 'Capítulo ' + episodeNumber;
+            videoTitle.textContent = ONE_PIECE_DATA.getTitle(episodeNumber);
 
             var duration = player.duration();
             if (isFinite(duration)) {
@@ -392,9 +414,7 @@
             }
         }
 
-        // 🔹 Compatible con Tizen: sin operador ?.
         function createSkipButtons(player) {
-            // Botón retroceder 10s
             var skipBackBtn = player.controlBar.addChild('button', {
                 clickHandler: function() {
                     var ct = player.currentTime();
@@ -405,7 +425,6 @@
             skipBackBtn.el().className += ' vjs-skip-back vjs-control vjs-button';
             skipBackBtn.controlText('Retroceder 10 segundos');
 
-            // Botón adelantar 10s
             var skipForwardBtn = player.controlBar.addChild('button', {
                 clickHandler: function() {
                     var ct = player.currentTime();
@@ -421,7 +440,6 @@
             skipForwardBtn.el().className += ' vjs-skip-forward vjs-control vjs-button';
             skipForwardBtn.controlText('Adelantar 10 segundos');
 
-            // 🔹 Búsqueda segura del panel de volumen (sin ?.)
             var volumePanel = null;
             if (player.controlBar.volumePanel && typeof player.controlBar.volumePanel.el === 'function') {
                 volumePanel = player.controlBar.volumePanel.el();
@@ -435,7 +453,6 @@
             }
         }
 
-        // 🔹 Inicialización segura para Tizen
         function initApp() {
             if (typeof videojs !== 'function') {
                 document.getElementById('videoTitle').textContent = 'Error: Video.js no cargó.';
@@ -456,6 +473,7 @@
                 });
 
                 generateContent();
+                
             } catch (e) {
                 console.error('Error al inicializar Video.js:', e);
                 document.getElementById('videoTitle').textContent = 'No se pudo iniciar el reproductor.';
@@ -476,7 +494,6 @@
             const episodesContainer = document.getElementById('episodesContainer');
             episodesContainer.innerHTML = '';
             
-            // Solo One Piece
             document.getElementById('videoContainer').style.display = 'block';
             document.getElementById('videoDuration').style.display = 'block';
             
@@ -498,8 +515,10 @@
                 episodeCard.className = 'episode-card';
                 episodeCard.setAttribute('data-episode', episodeNumber);
                 
+                var displayNumber = ONE_PIECE_DATA.getDisplayNumber(episodeNumber);
+                
                 episodeCard.innerHTML = 
-                    '<div class="episode-number">Capítulo ' + episodeNumber + '</div>' +
+                    '<div class="episode-number">' + displayNumber + '</div>' +
                     '<div class="episode-title">' + ONE_PIECE_DATA.getTitle(episodeNumber) + '</div>' +
                     '<div class="episode-duration">' +
                         '<svg class="play-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' +
@@ -512,6 +531,7 @@
                     var ep = parseInt(this.getAttribute('data-episode'), 10);
                     playOnePieceEpisode(ep);
                 });
+                
                 container.appendChild(episodeCard);
             }
         }
@@ -523,11 +543,10 @@
             }
 
             var videoTitle = document.getElementById('videoTitle');
-            videoTitle.textContent = 'Cargando Capítulo ' + episodeNumber + '...';
+            videoTitle.textContent = 'Cargando ' + ONE_PIECE_DATA.getTitle(episodeNumber) + '...';
      
             document.getElementById('videoDuration').textContent = 'Duración: --:--';
 
-            // Limpiar listeners anteriores
             if (player.__onLoadedMetadata) {
                 player.off('loadedmetadata', player.__onLoadedMetadata);
             }
@@ -539,7 +558,7 @@
                 onVideoReady(episodeNumber);
             };
             var onError = function() {
-                videoTitle.textContent = 'Error: Capítulo ' + episodeNumber + ' no disponible';
+                videoTitle.textContent = 'Error: ' + ONE_PIECE_DATA.getTitle(episodeNumber) + ' no disponible';
             };
 
             player.__onLoadedMetadata = onLoaded;
@@ -554,13 +573,33 @@
             });
 
             player.load();
+            
             player.play().catch(function(e) {
                 console.warn("Reproducción automática fallida:", e);
             });
 
             currentEpisode = episodeNumber;
             updateOnePieceNavigation();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            
+            // Scroll al inicio - método compatible con navegadores antiguos
+            // Usamos múltiples métodos para mayor compatibilidad
+            try {
+                // Método más básico y compatible
+                document.body.scrollTop = 0;
+                document.documentElement.scrollTop = 0;
+                
+                // Para navegadores más modernos (pero aún antiguos)
+                if (window.scrollTo) {
+                    window.scrollTo(0, 0);
+                }
+                
+                // Para IE antiguo
+                if (window.pageYOffset !== undefined) {
+                    window.pageYOffset = 0;
+                }
+            } catch (e) {
+                console.log('Scroll no funcionó:', e);
+            }
         }
 
         function updateOnePieceNavigation() {
@@ -595,7 +634,6 @@
             }
         }
 
-        // Solo hay One Piece, así que no necesitamos el selector de animes
         generateContent();
     </script>
 </body>
